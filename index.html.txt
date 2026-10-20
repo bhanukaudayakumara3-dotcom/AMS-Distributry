@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMS Distributry - Advanced Management System</title>
+    <!-- Tailwind CSS & Google Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Abhaya+Libre:wght@600;800&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', 'Abhaya Libre', serif; }
+        .sinhala-text { font-family: 'Abhaya Libre', serif; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+    <!-- Header Section -->
+    <header class="bg-indigo-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <span class="text-3xl font-extrabold tracking-wide text-amber-400 sinhala-text">AMS Distributry</span>
+                <span id="activeBranchTag" class="text-xs bg-amber-500 text-indigo-950 font-bold px-3 py-1 rounded-full uppercase">Main Branch</span>
+            </div>
+            
+            <!-- Branch Dynamic Selector -->
+            <div class="flex items-center space-x-3 bg-indigo-800 px-4 py-2 rounded-lg border border-indigo-700">
+                <label class="text-sm font-medium sinhala-text text-indigo-200">ශාඛාව මාරු කරන්න:</label>
+                <select id="branchSelector" onchange="switchBranch()" class="bg-indigo-950 text-amber-300 font-bold px-3 py-1 rounded outline-none border border-indigo-600 cursor-pointer">
+                    <!-- Loaded dynamically via JS -->
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white border-b border-slate-200 shadow-sm">
+        <div class="container mx-auto px-4 flex space-x-4 py-3 overflow-x-auto">
+            <button onclick="showSection('shopSection')" class="px-4 py-2 font-bold text-indigo-700 hover:bg-indigo-50 rounded-lg transition">🛍️ භාණ්ඩ (Items)</button>
+            <button onclick="showSection('adminItemsSection')" class="px-4 py-2 font-bold text-slate-600 hover:bg-indigo-50 rounded-lg transition sinhala-text">⚙️ භාණ්ඩ පාලනය</button>
+            <button onclick="showSection('customersSection')" class="px-4 py-2 font-bold text-slate-600 hover:bg-indigo-50 rounded-lg transition sinhala-text">👥 වාරික ගාහකයෝ</button>
+            <button onclick="showSection('salarySection')" class="px-4 py-2 font-bold text-slate-600 hover:bg-indigo-50 rounded-lg transition sinhala-text">💵 සේවක වැටුප් (Staff Salary)</button>
+            <button onclick="showSection('settingsSection')" class="px-4 py-2 font-bold text-slate-600 hover:bg-indigo-50 rounded-lg transition sinhala-text">🏢 ශාඛා සැකසුම් (Branch Edit)</button>
+        </div>
+    </nav>
+
+    <!-- Main Content Body -->
+    <main class="container mx-auto px-4 py-8">
+
+        <!-- 1. SHOP SECTION -->
+        <section id="shopSection" class="space-y-6">
+            <div class="bg-indigo-50 p-6 rounded-xl border border-indigo-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h2 id="displayBranchTitle" class="text-2xl font-bold text-indigo-900 sinhala-text">-</h2>
+                    <p id="displayBranchLoc" class="text-sm text-slate-600">📍 Location: -</p>
+                </div>
+                <input type="text" id="searchBox" placeholder="භාණ්ඩ සොයන්න..." onkeyup="filterItems()" class="px-4 py-2 border rounded-lg w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+
+            <div id="itemsGrid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Items list loaded via JS -->
+            </div>
+        </section>
+
+        <!-- 2. ADMIN MANAGE ITEMS SECTION -->
+        <section id="adminItemsSection" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-indigo-900 sinhala-text mb-4">නව භාණ්ඩයක් ඇතුළත් කිරීම හෝ වෙනස් කිරීම</h2>
+                <form id="itemForm" onsubmit="saveItem(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="hidden" id="editItemIndex" value="-1">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">භාණ්ඩයේ නම</label>
+                        <input type="text" id="itemName" required class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">මිළ (LKR)</label>
+                        <input type="number" id="itemPrice" required class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">ඡායාරූප Link (Image URL)</label>
+                        <input type="text" id="itemImage" required class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">විස්තරය</label>
+                        <input type="text" id="itemDesc" required class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    <div class="md:col-span-2 flex space-x-2">
+                        <button type="submit" class="bg-indigo-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-indigo-700">භාණ්ඩය Save කරන්න</button>
+                        <button type="button" onclick="resetItemForm()" class="bg-slate-300 text-slate-800 font-bold px-4 py-2 rounded-lg">Reset</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm overflow-x-auto border border-slate-200 p-4">
+                <h3 class="font-bold text-lg mb-3">මෙම ශාඛාවේ දැනට ඇති භාණ්ඩ ලැයිස්තුව</h3>
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100 border-b text-sm">
+                            <th class="p-3">නම</th>
+                            <th class="p-3">මිළ</th>
+                            <th class="p-3">විස්තරය</th>
+                            <th class="p-3">ක්‍රියාමාර්ග</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminItemsTable" class="divide-y text-sm"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 3. INSTALLMENT CUSTOMERS SECTION -->
+        <section id="customersSection" class="hidden space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-indigo-900 sinhala-text">වාරික ගෙවන ගාහකයින් (Installments)</h2>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm overflow-x-auto border border-slate-200">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100 border-b text-sm">
+                            <th class="p-4">නම (Name)</th>
+                            <th class="p-4">ලිපිනය (Address)</th>
+                            <th class="p-4">NIC අංකය</th>
+                            <th class="p-4">දුරකථන (Phone)</th>
+                            <th class="p-4">භාණ්ඩය</th>
+                            <th class="p-4">ඉතිරි මුදල (Due)</th>
+                            <th class="p-4">ක්‍රියාමාර්ග</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customersTableBody" class="divide-y text-sm"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 4. STAFF SALARY MANAGEMENT SECTION (Names & Salaries underneath) -->
+        <section id="salarySection" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-2xl font-bold text-indigo-900 sinhala-text mb-2">සේවක වැටුප් හා නම් කළමනාකරණය (Staff Salaries)</h2>
+                <p class="text-sm text-slate-500 mb-6">මෙම ශාඛාවට අදාළ සේවකයන්ගේ නම්, තනතුරු සහ වැටුප් (Basic & Allowances) පහතින් බලා Admin ට අවශ්‍ය පරිදි Edit කරගත හැක.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="staffCardsContainer">
+                    <!-- Staff Cards load here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. BRANCH SETTINGS SECTION -->
+        <section id="settingsSection" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 max-w-2xl mx-auto space-y-4">
+                <h2 class="text-2xl font-bold text-indigo-900 sinhala-text">🏢 ශාඛා විස්තර Edit කරන්න (Branch Location & Name)</h2>
+                
+                <form onsubmit="saveBranchSettings(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">ශාඛාවේ නම (Branch Name)</label>
+                        <input type="text" id="settingBranchName" required class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">ස්ථානය / ලිපිනය (Location / Address)</label>
+                        <input type="text" id="settingBranchLoc" required class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    <button type="submit" class="bg-emerald-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-emerald-700 transition">විස්තර Update කරන්න</button>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Order Form -->
+    <div id="orderModal" class="fixed inset-0 bg-black/50 hidden flex justify-center items-center z-50">
+        <div class="bg-white p-6 rounded-xl w-full max-w-lg space-y-4">
+            <h3 class="text-xl font-bold text-indigo-900 sinhala-text">භාණ්ඩය වාරිකයට ලබා දීම</h3>
+            <form onsubmit="submitOrder(event)" class="space-y-3">
+                <input type="hidden" id="orderItemName">
+                <div>
+                    <label class="block text-sm font-medium">ගාහකයාගේ නම (Name)</label>
+                    <input type="text" id="custName" required class="w-full px-3 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">ලිපිනය (Address)</label>
+                    <input type="text" id="custAddress" required class="w-full px-3 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">ජා.හැ. අංකය (NIC Number)</label>
+                    <input type="text" id="custNic" required class="w-full px-3 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">දුරකථන අංකය (Phone Number)</label>
+                    <input type="text" id="custPhone" required class="w-full px-3 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">මුළු මුදල / ආරම්භක ඉතිරි මුදල (Due Amount)</label>
+                    <input type="number" id="custDue" required class="w-full px-3 py-2 border rounded-lg">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeOrderModal()" class="px-4 py-2 bg-slate-200 rounded-lg">අවලංගු කරන්න</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">ඇණවුම තහවුරු කරන්න</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Data Logic -->
+    <script>
+        let currentBranchKey = 'main';
+
+        // Master Data Structure including Staff Names & Salaries
+        let branchesData = {
+            main: {
+                name: "Main Branch - Colombo",
+                location: "No 45, Galle Road, Colombo 03",
+                items: [
+                    { name: "LG Refrigerator 250L", price: 155000, image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400", desc: "Inverter Compressor - 10 Year Warranty" },
+                    { name: "Samsung Washing Machine", price: 110000, image: "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=400", desc: "7.5Kg Fully Automatic" }
+                ],
+                customers: [
+                    { name: "Saman Kumara", address: "Colombo", nic: "891234567V", phone: "0771234567", item: "LG Refrigerator 250L", due: 60000 }
+                ],
+                staff: [
+                    { name: "Sunil Perera", role: "Branch Manager", basic: 95000, allowance: 15000 }
+                ]
+            },
+            sub: {
+                name: "Sub Branch - Gampaha",
+                location: "No 12, Kandy Road, Gampaha",
+                items: [
+                    { name: "Singer Smart TV 43''", price: 89000, image: "https://images.unsplash.com/photo-1593784991095-a205069470b6?w=400", desc: "Full HD Android Smart TV" }
+                ],
+                customers: [],
+                staff: [
+                    { name: "Nimal Silva", role: "Sales Executive 1", basic: 55000, allowance: 8000 },
+                    { name: "Anura Bandara", role: "Sales Executive 2", basic: 50000, allowance: 7000 }
+                ]
+            }
+        };
+
+        function initApp() {
+            updateBranchDropdown();
+            renderAll();
+        }
+
+        function updateBranchDropdown() {
+            const selector = document.getElementById('branchSelector');
+            selector.innerHTML = `
+                <option value="main">${branchesData.main.name}</option>
+                <option value="sub">${branchesData.sub.name}</option>
+            `;
+            selector.value = currentBranchKey;
+        }
+
+        function switchBranch() {
+            currentBranchKey = document.getElementById('branchSelector').value;
+            renderAll();
+        }
+
+        function renderAll() {
+            let activeBranch = branchesData[currentBranchKey];
+            document.getElementById('activeBranchTag').innerText = activeBranch.name;
+            document.getElementById('displayBranchTitle').innerText = activeBranch.name;
+            document.getElementById('displayBranchLoc').innerText = "📍 Location: " + activeBranch.location;
+
+            document.getElementById('settingBranchName').value = activeBranch.name;
+            document.getElementById('settingBranchLoc').value = activeBranch.location;
+
+            renderShopItems();
+            renderAdminItems();
+            renderCustomers();
+            renderStaffSalary();
+        }
+
+        function showSection(id) {
+            ['shopSection', 'adminItemsSection', 'customersSection', 'salarySection', 'settingsSection'].forEach(s => {
+                document.getElementById(s).classList.add('hidden');
+            });
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        // --- SHOP & ITEMS LOGIC ---
+        function renderShopItems() {
+            const grid = document.getElementById('itemsGrid');
+            grid.innerHTML = '';
+            branchesData[currentBranchKey].items.forEach((item) => {
+                grid.innerHTML += `
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col justify-between">
+                        <img src="${item.image}" class="h-44 w-full object-cover">
+                        <div class="p-4 space-y-1">
+                            <h3 class="font-bold text-indigo-950">${item.name}</h3>
+                            <p class="text-xs text-slate-500">${item.desc}</p>
+                            <p class="text-indigo-600 font-extrabold text-lg">LKR ${item.price.toLocaleString()}</p>
+                        </div>
+                        <div class="p-3 bg-slate-50 border-t">
+                            <button onclick="openOrderModal('${item.name}', ${item.price})" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold hover:bg-indigo-700 transition sinhala-text">වාරිකයට ගන්න</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderAdminItems() {
+            const tbody = document.getElementById('adminItemsTable');
+            tbody.innerHTML = '';
+            branchesData[currentBranchKey].items.forEach((item, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="p-3 font-semibold">${item.name}</td>
+                        <td class="p-3 text-indigo-600 font-bold">LKR ${item.price.toLocaleString()}</td>
+                        <td class="p-3 text-slate-500">${item.desc}</td>
+                        <td class="p-3 space-x-2">
+                            <button onclick="editItem(${index})" class="px-2 py-1 bg-amber-500 text-white rounded text-xs">Edit</button>
+                            <button onclick="deleteItem(${index})" class="px-2 py-1 bg-red-600 text-white rounded text-xs">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function saveItem(e) {
+            e.preventDefault();
+            let idx = parseInt(document.getElementById('editItemIndex').value);
+            let itemObj = {
+                name: document.getElementById('itemName').value,
+                price: parseFloat(document.getElementById('itemPrice').value),
+                image: document.getElementById('itemImage').value,
+                desc: document.getElementById('itemDesc').value
+            };
+
+            if (idx === -1) {
+                branchesData[currentBranchKey].items.push(itemObj);
+            } else {
+                branchesData[currentBranchKey].items[idx] = itemObj;
+            }
+
+            resetItemForm();
+            renderAll();
+            alert("භාණ්ඩය සාර්ථකව Save විය!");
+        }
+
+        function editItem(index) {
+            let item = branchesData[currentBranchKey].items[index];
+            document.getElementById('editItemIndex').value = index;
+            document.getElementById('itemName').value = item.name;
+            document.getElementById('itemPrice').value = item.price;
+            document.getElementById('itemImage').value = item.image;
+            document.getElementById('itemDesc').value = item.desc;
+        }
+
+        function deleteItem(index) {
+            if (confirm("මෙම භාණ්ඩය ඉවත් කිරීමට අවශ්‍යද?")) {
+                branchesData[currentBranchKey].items.splice(index, 1);
+                renderAll();
+            }
+        }
+
+        function resetItemForm() {
+            document.getElementById('itemForm').reset();
+            document.getElementById('editItemIndex').value = "-1";
+        }
+
+        // --- BRANCH SETTINGS LOGIC ---
+        function saveBranchSettings(e) {
+            e.preventDefault();
+            branchesData[currentBranchKey].name = document.getElementById('settingBranchName').value;
+            branchesData[currentBranchKey].location = document.getElementById('settingBranchLoc').value;
+            
+            updateBranchDropdown();
+            renderAll();
+            alert("ශාඛා විස්තර සාර්ථකව වෙනස් විය!");
+        }
+
+        // --- STAFF SALARY & NAMES LOGIC ---
+        function renderStaffSalary() {
+            const container = document.getElementById('staffCardsContainer');
+            container.innerHTML = '';
+            
+            branchesData[currentBranchKey].staff.forEach((s, index) => {
+                let totalSalary = s.basic + s.allowance;
+                container.innerHTML += `
+                    <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl shadow-sm space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-xl font-extrabold text-indigo-950">${s.name}</h3>
+                                <p class="text-sm font-medium text-slate-600">තනතුර: ${s.role}</p>
+                            </div>
+                            <button onclick="editStaff(${index})" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-700 transition">නම හා වැටුප් Edit</button>
+                        </div>
+                        <hr class="border-slate-200">
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                                <span class="text-slate-500 block text-xs">මූලික වැටුප (Basic):</span>
+                                <span class="font-bold text-slate-800">LKR ${s.basic.toLocaleString()}</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-500 block text-xs">දීමනාව (Allowance):</span>
+                                <span class="font-bold text-slate-800">LKR ${s.allowance.toLocaleString()}</span>
+                            </div>
+                        </div>
+                        <div class="pt-2 border-t border-slate-200 flex justify-between items-center">
+                            <span class="text-sm font-semibold text-slate-700">මුළු වැටුප (Total):</span>
+                            <span class="text-lg font-black text-emerald-600">LKR ${totalSalary.toLocaleString()}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function editStaff(index) {
+            let staff = branchesData[currentBranchKey].staff[index];
+            let newName = prompt("සේවකයාගේ නම ඇතුළත් කරන්න:", staff.name);
+            let newRole = prompt("තනතුර ඇතුළත් කරන්න:", staff.role);
+            let newBasic = prompt("මූලික වැටුප (Basic Salary):", staff.basic);
+            let newAllow = prompt("දීමනාව (Allowance):", staff.allowance);
+
+            if (newName !== null && newRole !== null && newBasic !== null && newAllow !== null) {
+                staff.name = newName.trim() || staff.name;
+                staff.role = newRole.trim() || staff.role;
+                staff.basic = parseFloat(newBasic) || staff.basic;
+                staff.allowance = parseFloat(newAllow) || staff.allowance;
+                renderStaffSalary();
+                alert("සේවක විස්තර සාර්ථකව Update විය!");
+            }
+        }
+
+        // --- CUSTOMER & ORDER LOGIC ---
+        function openOrderModal(itemName, itemPrice) {
+            document.getElementById('orderItemName').value = itemName;
+            document.getElementById('custDue').value = itemPrice;
+            document.getElementById('orderModal').classList.remove('hidden');
+        }
+
+        function closeOrderModal() {
+            document.getElementById('orderModal').classList.add('hidden');
+        }
+
+        function submitOrder(e) {
+            e.preventDefault();
+            let cust = {
+                name: document.getElementById('custName').value,
+                address: document.getElementById('custAddress').value,
+                nic: document.getElementById('custNic').value,
+                phone: document.getElementById('custPhone').value,
+                item: document.getElementById('orderItemName').value,
+                due: parseFloat(document.getElementById('custDue').value)
+            };
+            branchesData[currentBranchKey].customers.push(cust);
+            closeOrderModal();
+            document.getElementById('orderModal').querySelector('form').reset();
+            renderCustomers();
+            showSection('customersSection');
+            alert("ගාහකයා සාර්ථකව එකතු විය!");
+        }
+
+        function renderCustomers() {
+            const tbody = document.getElementById('customersTableBody');
+            tbody.innerHTML = '';
+            branchesData[currentBranchKey].customers.forEach((c, idx) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="p-4 font-bold">${c.name}</td>
+                        <td class="p-4">${c.address}</td>
+                        <td class="p-4">${c.nic}</td>
+                        <td class="p-4">${c.phone}</td>
+                        <td class="p-4 font-semibold text-indigo-700">${c.item}</td>
+                        <td class="p-4 font-extrabold text-red-600">LKR ${c.due.toLocaleString()}</td>
+                        <td class="p-4 space-x-1">
+                            <button onclick="payInstallment(${idx})" class="px-2.5 py-1 bg-emerald-600 text-white rounded text-xs font-semibold">ගෙවීම්</button>
+                            <button onclick="deleteCustomer(${idx})" class="px-2.5 py-1 bg-red-600 text-white rounded text-xs font-semibold">Clear</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function payInstallment(index) {
+            let paid = prompt("ගෙවූ මුදල ඇතුළත් කරන්න:");
+            if (paid && !isNaN(paid)) {
+                let cust = branchesData[currentBranchKey].customers[index];
+                cust.due -= parseFloat(paid);
+                if (cust.due <= 0) {
+                    alert("සම්පූර්ණ මුදල ගෙවා අවසන්ය! ගාහකයා ඉවත් කෙරේ.");
+                    branchesData[currentBranchKey].customers.splice(index, 1);
+                } else {
+                    alert("ඉතිරි මුදල යාවත්කාලීන විය.");
+                }
+                renderCustomers();
+            }
+        }
+
+        function deleteCustomer(index) {
+            if (confirm("මෙම ගාහකයා ඉවත් කිරීමට අවශ්‍යද?")) {
+                branchesData[currentBranchKey].customers.splice(index, 1);
+                renderCustomers();
+            }
+        }
+
+        // Initialize on load
+        initApp();
+    </script>
+</body>
+</html>
